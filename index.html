@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard (with Shop and Buy Packs)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* -------------------------------------- */
+/* NEW COLOR BRANDING: WHITE BACKGROUND & GOLD/GREEN ACCENTS */
+/* -------------------------------------- */
+
+/* Main Colors & Background */
+body { 
+    margin:0; 
+    font-family:Arial,sans-serif; 
+    background:#F8F8FF; /* Off-White Background */
+    color:#333333; /* Dark Text for readability */ 
+    /* FIX: Horizontal scrolling rokne ke liye */
+    overflow-x: hidden; 
+}
+
+/* FIX: Universal Box Sizing & Transitions */
+*{
+    transition:all 0.3s ease-in-out; 
+    box-sizing: border-box; 
+} 
+
+/* Auth Page Background & Box */
+#authPage{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background:linear-gradient(135deg, #FFFFFF, #EEEEEE); /* Light Grey Gradient */
+}
+.auth-box{
+    background:#fff;
+    color:#000;
+    padding:25px;
+    border-radius:15px;
+    width:90%;
+    max-width:360px;
+    text-align:center;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2); /* Softer Shadow */
+}
+.auth-box input{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+.auth-box button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    background:linear-gradient(90deg, #FFD700, #FFAA00); /* GOLD Accent */ 
+    color:#171717; 
+    font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
+}
+.toggle{
+    margin-top:10px;
+    font-size:14px;
+    color:#444;
+    cursor:pointer;
+}
+
+/* ----------------------------- */
+/* DASHBOARD STYLES (FIXED)      */
+/* ----------------------------- */
+#dashboard{
+    display:none; /* JS control karega */
+    flex-direction:column;
+    /* FIX: height:100vh hata diya, content ko badhne ki jagah milegi */
+    min-height: 100vh; /* FIX: minimum height 100vh set ki */
+    background:linear-gradient(135deg, #F0F0F0, #EAEAEA); 
+    transition: all 0.4s ease; 
+    position:relative;
+} 
+.dash-top{
+    text-align:center;
+    padding:20px;
+    display:none;
+    color: #333333;
+}
+.dash-top h2{margin:5px 0;}
+.dash-top p{margin:0;font-size:14px;}
+.coins-box{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:15px;
+}
+.coin{
+    background:#FFFFFF;
+    color:#333333;
+    padding:10px 20px;
+    border-radius:15px;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    gap:8px; 
+    cursor:pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+} 
+
+.bottom-nav{
+  /* FIX: bottom-nav ko hamesha screen ke bottom par rakha */
+  position: sticky; /* Sticky ya fixed, sticky se content scroll hoga */
+  bottom: 0;
+  width: 100%; /* Poori width */
+  z-index: 99; /* Z-index badhaya */
+  
+  display:flex;
+  justify-content:space-around;
+  background:#171717;
+  padding:15px 0;
+  border-top-left-radius:15px;
+  border-top-right-radius:15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2); 
+}
+.bottom-nav div{
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+  padding:10px 15px;
+  background: transparent; 
+  border-radius:10px;
+  box-shadow:none;
+  color: #FFFFFF;
+}
+.bottom-nav div.active{
+    background:#FFD700;
+    color:#171717;
+    box-shadow:0 2px 5px rgba(255, 215, 0, 0.4); 
+}
+
+.page{
+    display:none;
+    padding:20px;
+    flex:1;
+    overflow-y:auto; 
+    color: #333333;
+    /* FIX: Bottom nav ke liye space chhodna */
+    /* bottom-nav ki height (approx 80px) se thoda zyada padding diya */
+    padding-bottom: 90px; 
+}
+.page.active{
+    display:block; /* display:block hi rakha, flex-direction ki ab zarurat nahi */
+    height: auto; /* height: 100% hata diya */
+}
+
+.account-form input{
+    width:100%;
+    padding:10px;
+    margin:10px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    color: #333333;
+    background: #FFFFFF;
+}
+.account-form button{
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    background:#006400;
+    color:white;
+    font-weight:bold;
+    width:100%;
+}
+.logout{
+    margin-top:15px;
+    background:#C0392B !important;
+}
+
+#banPopup,#unbanPopup{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.8);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+.ban-box,.unban-box{
+    background:#fff;
+    color:#000;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:320px;
+    text-align:center;
+    position:relative;
+}
+.ban-box button,.unban-box button{
+    margin:5px;
+    padding:10px 15px;
+    background:#4CAF50; 
+    border:none;
+    border-radius:8px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+.ban-logout{
+    background:#C0392B !important; 
+}
+
+.toast{
+    position:fixed;
+    bottom:100px; /* bottom-nav se upar dikhane ke liye */
+    left:50%;
+    transform:translateX(-50%);
+    background:#333;
+    color:#fff;
+    padding:12px 18px;
+    border-radius:8px;
+    font-size:14px;
+    display:none;
+    z-index:1500;
+}
+
+/* SHOP STYLES */
+.shop-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+    margin-top:12px;
+}
+.product-card{
+    background:#FFFFFF;
+    color: #333333;
+    padding:12px;
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.product-card h4{margin:0;font-size:16px;}
+.product-meta{display:flex;justify-content:space-between;align-items:center;font-size:14px;}
+.buy-btn{
+    padding:8px 10px;
+    border:none;
+    border-radius:8px;
+    background:#FFD700;
+    color:#171717;
+    font-weight:bold;
+    cursor:pointer;
+}
+.open-btn{
+    padding:8px 10px;
+    border:none;
+    border-radius:8px;
+    background:#4CAF50;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+}
+.purchased{
+    opacity:0.8;
+    border:1px solid rgba(40,167,69,0.6);
+}
+
+
+/* -------------------------------------- */
+/* NEW MODAL/OVERLAY STYLES (UNIFIED)     */
+/* -------------------------------------- */
+
+/* Dashboard par Blur effect */
+#dashboard.blur-background-active > *:not(#buy-currency-modal) {
+    filter: blur(4px); 
+    pointer-events: none; 
+}
+
+/* Base Modal Styling - DASHBOARD KE UPAR LAGA DO */
+#buy-currency-modal {
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); 
+    z-index: 100; 
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease;
+    overflow: auto; 
+}
+
+/* Modal Content Box */
+.modal-content-box {
+    background: #262626;
+    color: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    width: 90%;
+    max-width: 350px; 
+    text-align: center;
+    border: 1px solid #FFD700;
+    position: relative; 
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#buy-currency-modal.active .modal-content-box {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Package List Styling */
+.package-list {
+    margin-top: 20px;
+}
+
+.package-item {
+    padding: 12px;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    cursor: pointer; 
+    border-left: 4px solid #FFD700;
+    transition: background 0.2s;
+}
+
+.package-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Cross Button (❌) */
+.modal-close-cross {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #FFD700;
+    font-weight: bold;
+}
+
+/* Transaction Form Styles */
+.transaction-form-box input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #006400;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #171717;
+    color: #fff;
+}
+.transaction-form-box button {
+    margin-top: 15px;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background: #006400;
+    color: white;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
+}
+
+/* State-based view toggling */
+.modal-view{ display:none; }
+.modal-view.active{ display:block; }
+
+/* History Card Styles */
+.history-card {
+    background: #FFFFFF;
+    color: #333333;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 5px solid;
+}
+.history-card.Pending { border-color: #FFD700; }
+.history-card.Completed { border-color: #4CAF50; }
+.history-card.Rejected { border-color: #C0392B; }
+.history-card p { margin: 5px 0; font-size: 14px;}
+.status-badge {
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 12px;
+}
+.Pending .status-badge { background: #FFD700; color: #171717; }
+.Completed .status-badge { background: #4CAF50; color: #fff; }
+.Rejected .status-badge { background: #C0392B; color: #fff; }
+
+/* Admin Panel Styles */
+.admin-request-card {
+    background: #FFFFFF;
+    color: #333333;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.admin-request-card h5 { 
+    margin: 0 0 10px 0; 
+    font-size: 16px; 
+    color: #006400;
+}
+.admin-details p { margin: 3px 0; font-size: 14px; }
+.admin-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 10px;
+}
+.admin-actions .approve { background: #4CAF50; color: white; }
+.admin-actions .decline { background: #C0392B; color: white; }
+</style>
+</head>
+<body>
+
+<div id="authPage">
+  <div class="auth-box" id="loginBox">
+    <h2>Login</h2>
+    <input type="text" id="loginUser" placeholder="Username or Gmail">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div class="toggle" onclick="toggleForms()">Don't have an account? Sign Up</div>
+  </div>
+  <div class="auth-box" id="signupBox" style="display:none;">
+    <h2>Sign Up</h2>
+    <input type="text" id="signupUser" placeholder="Username">
+    <input type="email" id="signupEmail" placeholder="Gmail (only @gmail.com)">
+    <input type="password" id="signupPass" placeholder="Password">
+    <button onclick="signup()">Sign Up</button>
+    <div class="toggle" onclick="toggleForms()">Already have an account? Login</div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="dash-top" id="infoBar">
+    <h2 id="username">User</h2>
+    <p id="gmail">****@gmail.com</p>
+    
+    <div class="coins-box">
+      <div class="coin" id="g-currency-btn" onclick="openBuyModal('G', 'packs')">
+        🪙 G: <span id="gBalance">0</span>
+      </div>
+      <div class="coin" id="ep-currency-btn" onclick="openBuyModal('EP', 'packs')">
+        💲 EP: <span id="epBalance">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="homePage" class="page active">
+    🏠 Welcome to Home
+    </div>
+  </div>
+
+  <div id="shopPage" class="page">
+    <h3>🛒 Shop</h3>
+    <p>Tap a product to buy. Products priced in <strong>EP</strong> or <strong>G</strong>. If you have enough balance it will deduct instantly and open the product link.</p>
+    <div id="shopGrid" class="shop-grid"></div>
+  </div>
+
+  <div id="historyPage" class="page">
+    <h3>⏳ Buy History</h3>
+    <p>Check the status of your currency purchase requests.</p>
+    <div id="historyList">
+        </div>
+  </div>
+  
+  <div id="adminPage" class="page">
+    <h3>🛠️ Admin Panel (PANIL)</h3>
+    <p style="color:#006400;">Pending Buy Requests</p>
+    <div id="pendingRequestsList">
+        </div>
+  </div>
+  <div id="accountPage" class="page">
+    <h3>Account Settings</h3>
+    <form class="account-form" onsubmit="saveAccount(event)">
+      <input type="text" id="accUser" placeholder="Username">
+      <input type="email" id="accEmail" placeholder="Gmail">
+      <input type="password" id="accPass" placeholder="Password">
+      <input type="text" id="accNum" placeholder="Number">
+      <button id="saveBtn">Save Changes</button>
+      <p id="editMsg" style="color:#006400;"></p>
+    </form>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div id="taskPage" class="page">📋 Task
+  <h3>TASK NUMBER:-1</h3>
+    <p>.TASKS COMING SOON".</p>
+  </div>
+  
+  
+  
+
+  <div class="bottom-nav" id="bottomNav">
+    <div onclick="switchPage('homePage', this)" class="active">🏠 Home</div>
+    <div onclick="switchPage('shopPage', this)">🛒 Shop</div>
+    <div onclick="switchPage('historyPage', this)">⏳ History</div> 
+    <div onclick="switchPage('accountPage', this)">👤 Account</div>
+    <div onclick="switchPage('taskPage', this)">📋 Task</div>
+    </div>
+  
+  <div id="buy-currency-modal">
+      <div class="modal-content-box">
+          <span class="modal-close-cross" onclick="closeBuyModal()">❌</span>
+          
+          <div id="pack-selection-view" class="modal-view active">
+              <h3 id="modal-currency-title">Packs Ka Intikhab Karein</h3>
+              <p>Apni zaroorat ke mutabiq pack chunein:</p>
+              <div class="package-list" id="package-list">
+                  </div>
+          </div>
+
+          <div id="transaction-details-view" class="modal-view">
+              <h3>Transaction Details</h3>
+              <h3>JAZZCASH</h3>
+              <h3>03093175931</h3>
+              <h3>Ashiq Hussain</h3>
+              <p>Aap ne <strong id="selected-pack-info"></strong> pack chuna hai. <br>
+              <span style="font-size:12px;color:#aaa;">Send payment to: [Your Payment Number]</span></p>
+              <div class="transaction-form-box">
+                  <input type="text" id="trx-id" placeholder="TRX ID (Transaction ID)">
+                  <input type="text" id="sender-number" placeholder="Sender Number">
+                  <input type="text" id="sender-name" placeholder="Sender Name (Optional)">
+                  <button onclick="submitTransaction()">Submit Request</button>
+                  <p style="margin-top:15px;font-size:12px;color:#aaa;cursor:pointer;" onclick="openBuyModal(selectedCurrency, 'packs')">
+                    ← Change Pack
+                  </p>
+              </div>
+          </div>
+          
+      </div>
+  </div>
+    
+</div>
+<div id="banPopup">
+  <div class="ban-box">
+    <h3>🚫 Account banned 🚫</h3>
+    <p>Your account has been permanently banned. Please contact support.</p>
+    <button onclick="window.open('https://wa.me/447893985309','_blank')">Contact Us</button>
+    <button class="ban-logout" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div id="unbanPopup">
+  <div class="unban-box">
+    <h3>Account Unbanned</h3>
+    <p>🎉 Your account has been unbanned. Enjoy!</p>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* -------------------------
+   JSON Bin Configurations
+   -------------------------*/
+// MAIN PRODUCTS BIN (READ ONLY - for shop items)
+const PRODUCTS_BIN_ID = '68c4eda443b1c97be9414259';
+
+// NEW TRANSACTION REQUESTS BIN (READ/WRITE - for G/EP purchase history)
+const REQUESTS_BIN_ID = '68c51f3b43b1c97be9416b9f';
+
+// MASTER API KEY (Used for ALL read/write operations)
+const API_KEY = '$2a$10$nVIZMsRZGS/TILlwbvH6NeNN/qOSu4Z.xYITCWgXYbG6cHcCDdIO.';
+
+// Hardcoded G pack data (1G = 100EP)
+const G_PACKS = [
+    { g: 1,  rs: 10  },
+    { g: 10, rs: 100 },
+    { g: 50, rs: 500 },
+    { g: 100, rs: 1000 },
+];
+const ADMIN_EMAIL = "admin@gmail.com"; // Your Admin PANIL email
+
+/* -------------------------
+   Data & initial setup
+   -------------------------*/
+let users = JSON.parse(localStorage.getItem("users") || "[]");
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
+/* Ensure admin user exists (example admin PANIL) */
+if(!users.find(u=>u.email===ADMIN_EMAIL)){
+  users.push({
+    username:"PANIL",
+    email:ADMIN_EMAIL,
+    password:"admin123",
+    number:"",
+    g:0,
+    ep:0,
+    ban:false,
+    lastEdit:null,
+    buyUnlocked:{},
+    purchasedProducts:[],
+  });
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+let PRODUCTS = [];
+let ALL_REQUESTS = [];
+
+
+/* -------------------------
+   API Functions (Reading/Writing Bins)
+   -------------------------*/
+
+// Generic function to read data from any bin
+async function readBin(binId) {
+    try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+            headers: { 'X-Master-Key': API_KEY, 'Accept': 'application/json' }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return data.record;
+    } catch (err) {
+        console.error(`Error reading Bin ${binId}`, err);
+        showToast('Error fetching data from server.');
+        return null;
+    }
+}
+
+// Generic function to write (update/replace) data to any bin
+async function writeBin(binId, data) {
+    try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+            method: 'PUT',
+            headers: {
+                'X-Master-Key': API_KEY,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const result = await res.json();
+        return result;
+    } catch (err) {
+        console.error(`Error writing to Bin ${binId}`, err);
+        showToast('Error saving data to server.');
+        return null;
+    }
+}
+
+// Load all required data
+async function loadAllData() {
+    const productsData = await readBin(PRODUCTS_BIN_ID);
+    if (productsData && productsData.products) {
+        PRODUCTS = productsData.products;
+        loadShop();
+    }
+    
+    const requestsData = await readBin(REQUESTS_BIN_ID);
+    if (requestsData && requestsData.requests) {
+        ALL_REQUESTS = requestsData.requests;
+    }
+    
+    // Admin check for loading requests
+    if (currentUser && currentUser.email === ADMIN_EMAIL) {
+        loadAdminRequests();
+    }
+}
+
+
+/* -------------------------
+   Utility functions
+   -------------------------*/
+function toggleForms(){
+  document.getElementById("loginBox").style.display = document.getElementById("loginBox").style.display==="none" ? "block" : "none";
+  document.getElementById("signupBox").style.display = document.getElementById("signupBox").style.display==="none" ? "block" : "none";
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.style.display = "block";
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(()=> t.style.display = "none", 3000);
+}
+
+function generateUniqueId(prefix) {
+    const date = new Date();
+    const datePart = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+    const timePart = `${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`;
+    const randomPart = Math.floor(Math.random() * 900) + 100; // 3 digit random
+    return `${prefix}-${datePart}-${timePart}${randomPart}`;
+}
+
+/* -------------------------
+   Signup / Login
+   -------------------------*/
+function signup(){
+  let user = document.getElementById("signupUser").value.trim();
+  let email = document.getElementById("signupEmail").value.trim();
+  let pass = document.getElementById("signupPass").value;
+  if(!user || !email || !pass){ showToast("All fields required!"); return; }
+  if(!email.endsWith("@gmail.com")){ showToast("Only Gmail allowed!"); return; }
+  if(users.find(u => u.email === email)){ showToast("Email already used!"); return; }
+
+  const newUser = {
+    username: user,
+    email: email,
+    password: pass,
+    number: "",
+    g: 0,           
+    ep: 0,          
+    ban: false,
+    lastEdit: null,
+    buyUnlocked: {},
+    purchasedProducts: []
+  };
+  users.push(newUser);
+  localStorage.setItem("users", JSON.stringify(users));
+  showToast("Signup successful!"); toggleForms();
+}
+
+/* Login */
+function login(){
+  let input = document.getElementById("loginUser").value.trim();
+  let pass = document.getElementById("loginPass").value;
+  let found = users.find(u => (u.username===input || u.email===input) && u.password === pass);
+  if(!found){ showToast("Wrong Username or Password!"); return; }
+  currentUser = found;
+  if(!currentUser.buyUnlocked) currentUser.buyUnlocked = {};
+  if(!Array.isArray(currentUser.purchasedProducts)) currentUser.purchasedProducts = [];
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  showDashboard();
+}
+
+/* -------------------------
+   Dashboard / Info
+   -------------------------*/
+function showDashboard(){
+  document.getElementById("authPage").style.display = "none";
+  document.getElementById("dashboard").style.display = "flex";
+  loadInfo();
+  loadAllData(); // Load products and requests
+  // Add Admin Panel option if admin
+  if (currentUser && currentUser.email === ADMIN_EMAIL) {
+      addAdminNavLink();
+  }
+}
+
+function loadInfo(){
+  if(!currentUser) return;
+  document.getElementById("username").innerText = currentUser.username;
+  document.getElementById("gmail").innerText = hideEmail(currentUser.email);
+  document.getElementById("gBalance").innerText = currentUser.g;
+  document.getElementById("epBalance").innerText = currentUser.ep;
+}
+
+function hideEmail(email){
+  let [n,d] = email.split("@");
+  return n[0] + "****" + (n.slice(-1) || "") + "@" + d;
+}
+
+function addAdminNavLink() {
+    const bottomNav = document.getElementById("bottomNav");
+    if (!document.getElementById("adminNavLink")) {
+        const adminDiv = document.createElement("div");
+        adminDiv.id = "adminNavLink";
+        adminDiv.innerHTML = "👑 Admin";
+        adminDiv.onclick = function() { switchPage('adminPage', this); };
+        bottomNav.appendChild(adminDiv);
+    }
+}
+
+/* -------------------------
+   Account save / logout
+   -------------------------*/
+function loadAccountForm(){
+  if(!currentUser) return;
+  document.getElementById("accUser").value = currentUser.username;
+  document.getElementById("accEmail").value = currentUser.email;
+  document.getElementById("accPass").value = currentUser.password;
+  document.getElementById("accNum").value = currentUser.number;
+}
+function saveAccount(e){
+  e.preventDefault();
+  if(!currentUser) return;
+  const oldEmail = currentUser.email;
+  currentUser.username = document.getElementById("accUser").value;
+  currentUser.email = document.getElementById("accEmail").value;
+  currentUser.password = document.getElementById("accPass").value;
+  currentUser.number = document.getElementById("accNum").value;
+  currentUser.lastEdit = new Date().toISOString();
+
+  users = users.map(u => u.email === oldEmail ? currentUser : u);
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  showToast("Account updated!");
+  loadInfo();
+}
+
+function logout(){
+  localStorage.removeItem("currentUser");
+  window.location.reload();
+}
+
+/* -------------------------
+   Shop logic
+   -------------------------*/
+function loadShop(){
+  const grid = document.getElementById("shopGrid");
+  grid.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const bought = currentUser && currentUser.purchasedProducts && currentUser.purchasedProducts.includes(p.id);
+    const card = document.createElement("div");
+    card.className = "product-card" + (bought ? " purchased" : "");
+    card.innerHTML = `
+      <h4>${p.name}</h4>
+      <div class="product-meta">
+        <div>Price: <strong>${p.price} ${p.currency === 'ep' ? 'EP' : 'G'}</strong></div>
+        <div>
+          ${bought ? `<button class="open-btn" onclick="openProduct('${p.id}')">Open</button>` : `<button class="buy-btn" onclick="buyProduct('${p.id}')">Buy</button>`}
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function buyProduct(productId){
+  if(!currentUser){ showToast("Please login first"); return; }
+  const product = PRODUCTS.find(p=>p.id===productId);
+  if(!product) return;
+  if(!Array.isArray(currentUser.purchasedProducts)) currentUser.purchasedProducts = [];
+
+  if(currentUser.purchasedProducts.includes(productId)){
+    openProduct(productId); return;
+  }
+
+  if(product.currency === 'ep'){
+    if(currentUser.ep < product.price){ showToast("Not enough EP!"); return; }
+    currentUser.ep -= product.price;
+  } else if(product.currency === 'g'){
+    if(currentUser.g < product.price){ showToast("Not enough G!"); return; }
+    currentUser.g -= product.price;
+  } else {
+    showToast("Unknown currency"); return;
+  }
+
+  currentUser.purchasedProducts.push(productId);
+
+  users = users.map(u => u.email === currentUser.email ? currentUser : u);
+
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+  loadInfo();
+  loadShop();
+
+  window.open(product.link, "_blank");
+}
+
+function openProduct(productId){
+  const product = PRODUCTS.find(p=>p.id===productId);
+  if(!product) return;
+  if(currentUser && Array.isArray(currentUser.purchasedProducts) && currentUser.purchasedProducts.includes(productId)){
+    window.open(product.link, "_blank");
+  } else {
+    showToast("You must buy this product first.");
+  }
+}
+
+/* -------------------------
+   History Page Logic
+   -------------------------*/
+function loadHistory() {
+    if (!currentUser) return;
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+
+    const userRequests = ALL_REQUESTS
+        .filter(req => req.userEmail === currentUser.email)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Latest first
+
+    if (userRequests.length === 0) {
+        historyList.innerHTML = '<p style="text-align:center; margin-top:30px;">No purchase history found.</p>';
+        return;
+    }
+
+    userRequests.forEach(req => {
+        const card = document.createElement('div');
+        card.className = `history-card ${req.status}`;
+        card.innerHTML = `
+            <p><strong>Pack:</strong> ${req.packName} (${req.packPriceRs} Rs.)</p>
+            <p><strong>Status:</strong> <span class="status-badge">${req.status}</span></p>
+            <p><strong>TRX ID:</strong> ${req.trxId}</p>
+            <p style="font-size:11px; color:#aaa;">${new Date(req.timestamp).toLocaleString()}</p>
+        `;
+        historyList.appendChild(card);
+    });
+}
+
+
+/* -------------------------
+   Admin Panel (PANIL) Logic
+   -------------------------*/
+function loadAdminRequests() {
+    if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+
+    const requestList = document.getElementById('pendingRequestsList');
+    requestList.innerHTML = '';
+    
+    const pendingRequests = ALL_REQUESTS.filter(req => req.status === 'Pending').sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Oldest first
+
+    if (pendingRequests.length === 0) {
+        requestList.innerHTML = '<p style="text-align:center; margin-top:30px; color:#25D366;">No Pending Requests found. All Clear!</p>';
+        return;
+    }
+
+    pendingRequests.forEach(req => {
+        const card = document.createElement('div');
+        card.className = 'admin-request-card';
+        card.innerHTML = `
+            <h5>${req.currencyType} Pack Request: ${req.packName} (${req.packPriceRs} Rs.)</h5>
+            <div class="admin-details">
+                <p><strong>User:</strong> ${req.username} (${req.userEmail})</p>
+                <p><strong>Sent From:</strong> ${req.senderNumber}</p>
+                <p><strong>TRX ID:</strong> <span style="color:#ff4b2b;">${req.trxId}</span></p>
+                <p style="font-size:11px; color:#aaa;">ID: ${req.id} | ${new Date(req.timestamp).toLocaleString()}</p>
+            </div>
+            <div class="admin-actions">
+                <button class="approve" onclick="handleAdminAction('${req.id}', 'Completed', ${req.packGValue})">Approve</button>
+                <button class="decline" onclick="handleAdminAction('${req.id}', 'Rejected', 0)">Decline</button>
+            </div>
+        `;
+        requestList.appendChild(card);
+    });
+}
+
+// Admin Approve/Decline handler
+async function handleAdminAction(id, newStatus, gValue) {
+    showToast(`Processing request ${id}...`);
+    
+    const requestIndex = ALL_REQUESTS.findIndex(req => req.id === id);
+    if (requestIndex === -1) {
+        showToast('Error: Request not found!');
+        return;
+    }
+
+    const request = ALL_REQUESTS[requestIndex];
+
+    // 1. Update User Balance in LocalStorage (only if Approved)
+    if (newStatus === 'Completed') {
+        const targetUser = users.find(u => u.email === request.userEmail);
+        if (targetUser) {
+            if (request.currencyType === 'G') {
+                targetUser.g += gValue;
+            } else if (request.currencyType === 'EP') {
+                targetUser.ep += gValue * 100; // 1G=100EP
+            }
+            // Save updated users list back to LocalStorage
+            localStorage.setItem("users", JSON.stringify(users));
+            // If the admin is the target user (for testing), update currentUser as well
+            if (request.userEmail === currentUser.email) {
+                 currentUser = targetUser;
+                 localStorage.setItem("currentUser", JSON.stringify(currentUser));
+                 loadInfo();
+            }
+        } else {
+            showToast('Warning: User not found in local data!');
+        }
+    }
+
+    // 2. Update Request Status in ALL_REQUESTS array
+    ALL_REQUESTS[requestIndex].status = newStatus;
+
+    // 3. Write updated ALL_REQUESTS array back to JSON Bin
+    const success = await writeBin(REQUESTS_BIN_ID, { requests: ALL_REQUESTS });
+
+    if (success) {
+        showToast(`Request ${id} ${newStatus} successfully!`);
+        loadAdminRequests(); // Reload admin list
+        // Note: Target user needs to reload or log in again to see the history/balance update instantly.
+    } else {
+        showToast('Server Error: Failed to update request status on server.');
+    }
+}
+
+
+/* -------------------------
+   Navigation behavior
+   -------------------------*/
+function switchPage(id, el){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".bottom-nav div").forEach(d=>d.classList.remove("active"));
+  el.classList.add("active");
+  
+  // Visibility of info bar
+  const infoBarPages = ["homePage", "accountPage", "adminPage", "historyPage"];
+  document.getElementById("infoBar").style.display = infoBarPages.includes(id) ? "block" : "none";
+  
+  // Page specific actions
+  if(id === "accountPage") loadAccountForm();
+  if(id === "shopPage") loadShop();
+  if(id === "historyPage") loadHistory(); // Load history when switching to history page
+  if(id === "adminPage") loadAdminRequests();
+  
+  loadInfo(); // Always ensure info is up to date when switching
+  
+  closeBuyModal(); 
+}
+
+/* -------------------------
+   Live Ban/Unban Check
+   -------------------------*/
+setInterval(()=>{
+  let allUsers = JSON.parse(localStorage.getItem("users") || "[]");
+  if(!currentUser) return;
+  let updatedUser = allUsers.find(u => u.email === currentUser.email);
+  if(!updatedUser) return;
+
+  if(updatedUser.ban && !document.getElementById("banPopup").classList.contains("active")){
+      document.getElementById("banPopup").style.display = "flex";
+      document.getElementById("banPopup").classList.add("active");
+  }
+
+  if(!updatedUser.ban && document.getElementById("banPopup").classList.contains("active")){
+      document.getElementById("banPopup").style.display = "none";
+      document.getElementById("banPopup").classList.remove("active");
+      showUnbanPopup();
+  }
+
+  currentUser = updatedUser;
+}, 1000);
+
+function showUnbanPopup(){
+  document.getElementById("unbanPopup").style.display = "flex";
+  setTimeout(()=>{ document.getElementById("unbanPopup").style.display = "none"; },3000);
+}
+
+/* -------------------------
+   UNIFIED Currency Pack/Transaction Modal Logic
+   -------------------------*/
+const dashboardDiv = document.getElementById('dashboard');
+const buyCurrencyModal = document.getElementById('buy-currency-modal');
+const bottomNav = document.getElementById('bottomNav');
+const packageList = document.getElementById('package-list');
+const selectedPackInfo = document.getElementById('selected-pack-info');
+
+let selectedCurrency = '';
+let selectedPackGValue = 0; // The G value equivalent (used for saving)
+let selectedPackPrice = 0;
+
+function openBuyModal(currency, view, packGValue=0, packRsPrice=0) {
+    if(!currentUser){ showToast("Please login first"); return; }
+    
+    selectedCurrency = currency;
+    
+    // 1. Bottom Nav (4 options) ko hata do
+    bottomNav.style.display = 'none';
+
+    // 2. Dashboard par blur lagao
+    dashboardDiv.classList.add('blur-background-active');
+    
+    // 3. Modal ko show karo
+    buyCurrencyModal.style.display = 'flex';
+    buyCurrencyModal.classList.add('active');
+    
+    // 4. View switch karo
+    document.querySelectorAll('.modal-view').forEach(v => v.classList.remove('active'));
+
+    if (view === 'packs') {
+        document.getElementById('pack-selection-view').classList.add('active');
+        loadPacks(currency);
+    } else if (view === 'transaction') {
+        // Transaction ke liye data set karna
+        const packName = currency === 'G' ? `${packGValue}G` : `${packGValue * 100}EP`;
+        
+        selectedPackGValue = packGValue;
+        selectedPackPrice = packRsPrice;
+        
+        selectedPackInfo.innerHTML = `${packName} (<strong style="color:#25D366">${packRsPrice} Rs.</strong>) pack chuna hai.`;
+        
+        // Input fields clear karna
+        document.getElementById('trx-id').value = '';
+        document.getElementById('sender-number').value = '';
+        document.getElementById('sender-name').value = '';
+
+        document.getElementById('transaction-details-view').classList.add('active');
+    }
+}
+
+function loadPacks(currency) {
+    document.getElementById('modal-currency-title').innerText = `${currency} Packs Ka Intikhab Karein`;
+    packageList.innerHTML = '';
+    
+    G_PACKS.forEach(pack => {
+        let displayValue;
+        
+        if (currency === 'G') {
+            displayValue = `${pack.g}G`;
+        } else {
+            const epValue = pack.g * 100;
+            displayValue = `${epValue}EP`; 
+        }
+        
+        const packItem = document.createElement('div');
+        packItem.className = 'package-item';
+        // pack.g here is the equivalent G value, used to calculate EP or just G
+        packItem.onclick = () => openBuyModal(currency, 'transaction', pack.g, pack.rs); 
+        packItem.innerHTML = `${displayValue} <span class="price">${pack.rs} Rs.</span>`;
+        packageList.appendChild(packItem);
+    });
+}
+
+function closeBuyModal() {
+    dashboardDiv.classList.remove('blur-background-active');
+    buyCurrencyModal.classList.remove('active');
+    setTimeout(() => { 
+      buyCurrencyModal.style.display = 'none'; 
+    }, 300); 
+
+    bottomNav.style.display = 'flex';
+}
+
+// 📤 Transaction Submit Karne Ka Function
+async function submitTransaction() {
+    const trxId = document.getElementById('trx-id').value.trim();
+    const senderNum = document.getElementById('sender-number').value.trim();
+    const senderName = document.getElementById('sender-name').value.trim();
+
+    if (trxId === '' || senderNum === '') {
+        showToast('Please enter TRX ID and Sender Number.');
+        return;
+    }
+
+    const packName = selectedCurrency === 'G' ? `${selectedPackGValue}G` : `${selectedPackGValue * 100}EP`;
+
+    const newRequest = {
+        id: generateUniqueId("TRX"),
+        userEmail: currentUser.email,
+        username: currentUser.username,
+        status: "Pending",
+        currencyType: selectedCurrency,
+        packName: packName,
+        packGValue: selectedPackGValue, // Store G value for easy calculation later
+        packPriceRs: selectedPackPrice,
+        trxId: trxId,
+        senderNumber: senderNum,
+        senderName: senderName || 'N/A',
+        timestamp: new Date().toISOString()
+    };
+    
+    // 1. Add new request to local array
+    ALL_REQUESTS.push(newRequest);
+    
+    // 2. Write updated array back to JSON Bin
+    const success = await writeBin(REQUESTS_BIN_ID, { requests: ALL_REQUESTS });
+
+    if (success) {
+        closeBuyModal(); 
+        showToast(`Transaction for ${packName} submitted! Waiting for admin approval. Check History!`);
+    } else {
+        // If writing fails, remove the request from the local array
+        ALL_REQUESTS.pop();
+        showToast('Server Error: Failed to submit transaction. Try again.');
+    }
+}
+
+
+/* make sure when the page loads we sync currentUser from storage */
+window.addEventListener('load', () => {
+  users = JSON.parse(localStorage.getItem("users") || "[]");
+  currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+  
+  if(currentUser){
+    if(!Array.isArray(currentUser.purchasedProducts)) currentUser.purchasedProducts = [];
+    if(!currentUser.buyUnlocked) currentUser.buyUnlocked = {};
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    showDashboard();
+  }
+});
+</script>
+</body>
+</html>
